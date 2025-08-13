@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { query, validationResult } from 'express-validator';
+import { query, validationResult, body } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken, requireDoctor } from '../middleware/auth';
 import { getCache, setCache } from '../config/redis';
@@ -325,9 +325,178 @@ router.get('/:id', async (req, res) => {
 
 /**
  * @swagger
+ * /api/doctors/{id}/recurring-rules:
+ *   get:
+ *     summary: Get doctor's recurring availability rules
+ *     tags: [Doctors]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Recurring rules retrieved successfully
+ */
+router.get('/:id/recurring-rules', async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+
+    const rules = await prisma.recurringAvailabilityRule.findMany({
+      where: { 
+        doctorId: id,
+        isActive: true 
+      },
+      orderBy: [
+        { dayOfWeek: 'asc' },
+        { startTime: 'asc' }
+      ]
+    });
+
+    res.json({
+      success: true,
+      data: rules
+    });
+  } catch (error) {
+    console.error('Get recurring rules error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch recurring rules'
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/doctors/{id}/recurring-rules:
+ *   post:
+ *     summary: Create recurring availability rule (Doctor only)
+ *     tags: [Doctors]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               dayOfWeek:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 6
+ *               startTime:
+ *                 type: string
+ *               endTime:
+ *                 type: string
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *               endDate:
+ *                 type: string
+ *                 format: date
+ *     responses:
+ *       201:
+ *         description: Recurring rule created successfully
+ */
+router.post('/:id/recurring-rules', authenticateToken, requireDoctor, [
+  body('dayOfWeek').isInt({ min: 0, max: 6 }),
+  body('startTime').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
+  body('endTime').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
+  body('startDate').isISO8601(),
+  body('endDate').optional().isISO8601()
+], async (req: any, res: any) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation error',
+        details: errors.array()
+      });
+    }
+
+    const { id } = req.params;
+    const { dayOfWeek, startTime, endTime, startDate, endDate } = req.body;
+
+    // Verify the doctor is updating their own schedule
+    if (req.user.id !== id) {
+      return res.status(403).json({
+        success: false,
+        error: 'You can only update your own schedule'
+      });
+    }
+
+    // Check for time conflicts
+    const conflictingRule = await prisma.recurringAvailabilityRule.findFirst({
+      where: {
+        doctorId: id,
+        dayOfWeek,
+        isActive: true,
+        OR: [
+          {
+            AND: [
+              { startTime: { lte: startTime } },
+              { endTime: { gt: startTime } }
+            ]
+          },
+          {
+            AND: [
+              { startTime: { lt: endTime } },
+              { endTime: { gte: endTime } }
+            ]
+          }
+        ]
+      }
+    });
+
+    if (conflictingRule) {
+      return res.status(400).json({
+        success: false,
+        error: 'Time slot conflicts with existing rule'
+      });
+    }
+
+    const rule = await prisma.recurringAvailabilityRule.create({
+      data: {
+        doctorId: id,
+        dayOfWeek,
+        startTime,
+        endTime,
+        startDate: new Date(startDate),
+        endDate: endDate ? new Date(endDate) : null
+      }
+    });
+
+    // Generate time slots based on this rule
+    await generateTimeSlotsFromRule(rule);
+
+    res.status(201).json({
+      success: true,
+      message: 'Recurring rule created successfully',
+      data: rule
+    });
+  } catch (error) {
+    console.error('Create recurring rule error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create recurring rule'
+    });
+  }
+});
+
+/**
+ * @swagger
  * /api/doctors/{id}/slots:
  *   get:
- *     summary: Get doctor's available slots
+ *     summary: Get doctor's time slots for a specific date
  *     tags: [Doctors]
  *     parameters:
  *       - in: path
@@ -341,84 +510,47 @@ router.get('/:id', async (req, res) => {
  *           type: string
  *           format: date
  *       - in: query
- *         name: startDate
+ *         name: status
  *         schema:
  *           type: string
- *           format: date
+ *           enum: [AVAILABLE, BOOKED, LOCKED, CANCELLED]
  *       - in: query
- *         name: endDate
+ *         name: consultationMode
  *         schema:
  *           type: string
- *           format: date
+ *           enum: [ONLINE, IN_PERSON]
  *     responses:
  *       200:
- *         description: Slots retrieved successfully
+ *         description: Time slots retrieved successfully
  */
-router.get('/:id/slots', [
-  query('date').optional().isISO8601(),
-  query('startDate').optional().isISO8601(),
-  query('endDate').optional().isISO8601()
-], async (req: any, res: any) => {
+router.get('/:id/slots', async (req: any, res: any) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        error: 'Validation error',
-        details: errors.array()
-      });
-    }
-
     const { id } = req.params;
-    const { date, startDate, endDate } = req.query;
+    const { date, status, consultationMode } = req.query;
 
-    // Verify doctor exists
-    const doctor = await prisma.user.findFirst({
-      where: {
-        id,
-        role: 'DOCTOR'
-      }
-    });
-
-    if (!doctor) {
-      return res.status(404).json({
-        success: false,
-        error: 'Doctor not found'
-      });
-    }
-
-    // Build date filter
-    let dateFilter: any = {};
+    const whereClause: any = { doctorId: id };
+    
     if (date) {
-      const targetDate = new Date(date as string);
-      dateFilter.date = targetDate;
-    } else if (startDate && endDate) {
-      dateFilter.date = {
-        gte: new Date(startDate as string),
-        lte: new Date(endDate as string)
-      };
-    } else {
-      // Default to next 7 days
-      const start = new Date();
-      const end = new Date();
-      end.setDate(end.getDate() + 7);
-      dateFilter.date = {
-        gte: start,
-        lte: end
-      };
+      whereClause.date = new Date(date);
+    }
+    
+    if (status) {
+      whereClause.status = status;
     }
 
     const slots = await prisma.timeSlot.findMany({
-      where: {
-        doctorId: id,
-        ...dateFilter
-      },
-      select: {
-        id: true,
-        date: true,
-        startTime: true,
-        endTime: true,
-        status: true
+      where: whereClause,
+      include: {
+        appointment: {
+          include: {
+            patient: {
+              select: {
+                firstName: true,
+                lastName: true
+              }
+            }
+          }
+        }
       },
       orderBy: [
         { date: 'asc' },
@@ -426,18 +558,133 @@ router.get('/:id/slots', [
       ]
     });
 
+    // Filter by consultation mode if specified
+    let filteredSlots = slots;
+    if (consultationMode) {
+      filteredSlots = slots.filter(slot => {
+        if (slot.appointment) {
+          return slot.appointment.consultationMode === consultationMode;
+        }
+        return true; // Available slots can be either mode
+      });
+    }
+
     res.json({
       success: true,
-      data: slots
+      data: filteredSlots
     });
   } catch (error) {
     console.error('Get doctor slots error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get doctor slots'
+      error: 'Failed to fetch time slots'
     });
   }
 });
+
+/**
+ * @swagger
+ * /api/doctors/{id}/stats:
+ *   get:
+ *     summary: Get doctor's statistics
+ *     tags: [Doctors]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Doctor stats retrieved successfully
+ */
+router.get('/:id/stats', async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+
+    // Get total appointments
+    const totalAppointments = await prisma.appointment.count({
+      where: { doctorId: id }
+    });
+
+    // Get today's appointments
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const todayAppointments = await prisma.appointment.count({
+      where: {
+        doctorId: id,
+        createdAt: {
+          gte: today,
+          lt: tomorrow
+        }
+      }
+    });
+
+    // Get average rating
+    const doctor = await prisma.user.findUnique({
+      where: { id },
+      select: { rating: true }
+    });
+
+    // Get total unique patients
+    const totalPatients = await prisma.appointment.groupBy({
+      by: ['patientId'],
+      where: { doctorId: id },
+      _count: { patientId: true }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        totalAppointments,
+        todayAppointments,
+        averageRating: doctor?.rating || 0,
+        totalPatients: totalPatients.length
+      }
+    });
+  } catch (error) {
+    console.error('Get doctor stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch doctor statistics'
+    });
+  }
+});
+
+// Helper function to generate time slots from recurring rules
+async function generateTimeSlotsFromRule(rule: any) {
+  const startDate = new Date(rule.startDate);
+  const endDate = rule.endDate ? new Date(rule.endDate) : new Date();
+  endDate.setDate(endDate.getDate() + 30); // Generate for next 30 days if no end date
+
+  const slots = [];
+  const currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    if (currentDate.getDay() === rule.dayOfWeek) {
+      slots.push({
+        doctorId: rule.doctorId,
+        date: new Date(currentDate),
+        startTime: rule.startTime,
+        endTime: rule.endTime,
+        status: 'AVAILABLE' as any,
+        isRecurring: true,
+        recurringRuleId: rule.id
+      });
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  if (slots.length > 0) {
+    await prisma.timeSlot.createMany({
+      data: slots,
+      skipDuplicates: true
+    });
+  }
+}
 
 /**
  * @swagger

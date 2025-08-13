@@ -1,0 +1,124 @@
+import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
+import Redis from 'ioredis';
+import { Request, Response, NextFunction } from 'express';
+
+const redis = new Redis({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: parseInt(process.env.REDIS_PORT || '6379'),
+});
+
+// Create rate limiters with different configurations
+export const createRateLimiter = (options: {
+  windowMs: number;
+  max: number;
+  message?: string;
+  keyGenerator?: (req: Request) => string;
+  skipSuccessfulRequests?: boolean;
+}) => {
+  return rateLimit({
+    store: new RedisStore({
+      client: redis,
+      prefix: 'rate_limit:',
+    }),
+    windowMs: options.windowMs,
+    max: options.max,
+    message: options.message || 'Too many requests from this IP',
+    keyGenerator: options.keyGenerator || ((req) => req.ip),
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: options.skipSuccessfulRequests || false,
+    handler: (req: Request, res: Response) => {
+      res.status(429).json({
+        success: false,
+        error: 'Rate limit exceeded',
+        retryAfter: Math.ceil(options.windowMs / 1000),
+        limit: options.max,
+        windowMs: options.windowMs,
+      });
+    },
+  });
+};
+
+// Different limits for different endpoints
+export const authRateLimit = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts per 15 minutes
+  message: 'Too many authentication attempts. Please try again later.',
+  skipSuccessfulRequests: true,
+});
+
+export const apiRateLimit = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // 100 requests per minute
+  message: 'Too many API requests. Please slow down.',
+});
+
+export const bookingRateLimit = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 booking attempts per minute
+  message: 'Too many booking attempts. Please wait before trying again.',
+});
+
+export const doctorScheduleRateLimit = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // 20 schedule updates per minute
+  message: 'Too many schedule updates. Please wait before trying again.',
+});
+
+// Special rate limiter for OTP verification
+export const otpRateLimit = createRateLimiter({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 3, // 3 OTP attempts per 5 minutes
+  message: 'Too many OTP attempts. Please wait before trying again.',
+});
+
+// Rate limiter for file uploads
+export const uploadRateLimit = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // 5 uploads per minute
+  message: 'Too many file uploads. Please wait before trying again.',
+});
+
+// Dynamic rate limiter based on user role
+export const dynamicRateLimit = (req: Request, res: Response, next: NextFunction) => {
+  const user = (req as any).user;
+  
+  if (user?.role === 'ADMIN') {
+    // Admins get higher limits
+    return createRateLimiter({
+      windowMs: 60 * 1000,
+      max: 500,
+    })(req, res, next);
+  } else if (user?.role === 'DOCTOR') {
+    // Doctors get moderate limits
+    return createRateLimiter({
+      windowMs: 60 * 1000,
+      max: 200,
+    })(req, res, next);
+  } else {
+    // Patients get standard limits
+    return createRateLimiter({
+      windowMs: 60 * 1000,
+      max: 100,
+    })(req, res, next);
+  }
+};
+
+// Rate limiter for public endpoints
+export const publicRateLimit = createRateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 50, // 50 requests per minute for public endpoints
+  message: 'Too many requests from this IP. Please wait before trying again.',
+});
+
+export default {
+  authRateLimit,
+  apiRateLimit,
+  bookingRateLimit,
+  doctorScheduleRateLimit,
+  otpRateLimit,
+  uploadRateLimit,
+  dynamicRateLimit,
+  publicRateLimit,
+};

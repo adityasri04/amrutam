@@ -117,6 +117,38 @@ amrutam-platform/
 
 ### CI/CD
 - GitHub Actions for automated testing
+
+## 🌟 **Bonus Features Implemented**
+
+### **Doctor Dashboard with Calendar View**
+- Interactive monthly calendar showing appointments
+- Real-time slot status updates
+- Patient information and consultation details
+- Quick actions for schedule management
+
+### **Recurring Availability Rules**
+- Set weekly schedules (e.g., Monday 9 AM - 5 PM)
+- Automatic slot generation for future dates
+- Conflict detection and validation
+- Flexible start/end date ranges
+
+### **Calendar-Based Slot Picker**
+- Interactive date selection with availability indicators
+- Time slot grid with real-time status
+- Consultation mode toggle (Online/In-Person)
+- Responsive design with smooth animations
+
+### **Advanced API Rate Limiting**
+- Role-based rate limits (Admin: 500/min, Doctor: 200/min, Patient: 100/min)
+- Endpoint-specific limits (Auth: 5/15min, Booking: 10/min, OTP: 3/5min)
+- Redis-backed storage for distributed deployments
+- Custom error messages with retry-after headers
+
+### **Live Deployment Ready**
+- **Render**: Backend with PostgreSQL and Redis
+- **Vercel**: Frontend with API proxy configuration
+- **Docker**: Production-ready containers
+- **GitHub Actions**: Automated CI/CD pipeline
 - Docker containerization
 - Environment-specific deployments
 

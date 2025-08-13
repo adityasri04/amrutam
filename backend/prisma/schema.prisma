@@ -44,6 +44,7 @@ model User {
   patientAppointments Appointment[] @relation("PatientAppointments")
   doctorSlots        TimeSlot[]
   patientSlotLocks   SlotLock[] @relation("PatientSlotLocks")
+  recurringRules     RecurringAvailabilityRule[]
 
   @@map("users")
 }
@@ -69,6 +70,8 @@ model TimeSlot {
   status       SlotStatus @default(AVAILABLE)
   appointmentId String?
   lockedUntil  DateTime?
+  isRecurring  Boolean    @default(false)
+  recurringRuleId String?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -76,9 +79,30 @@ model TimeSlot {
   doctor       User         @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   appointment  Appointment?
   slotLocks   SlotLock[]
+  recurringRule RecurringAvailabilityRule? @relation(fields: [recurringRuleId], references: [id])
 
   @@unique([doctorId, date, startTime])
   @@map("time_slots")
+}
+
+model RecurringAvailabilityRule {
+  id          String   @id @default(cuid())
+  doctorId    String
+  dayOfWeek   Int      // 0 = Sunday, 1 = Monday, etc.
+  startTime   String
+  endTime     String
+  isActive    Boolean  @default(true)
+  startDate   DateTime
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  doctor      User        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  timeSlots   TimeSlot[]
+
+  @@unique([doctorId, dayOfWeek, startTime, endTime])
+  @@map("recurring_availability_rules")
 }
 
 model Appointment {
