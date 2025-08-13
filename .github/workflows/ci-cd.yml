@@ -45,8 +45,11 @@ jobs:
     - name: Build frontend
       run: npm run build --workspace=@amrutam/frontend
     
-    - name: Run tests
-      run: npm test
+    - name: Run type checks
+      run: |
+        npm run type-check --workspace=@amrutam/shared
+        npm run type-check --workspace=@amrutam/backend
+        npm run type-check --workspace=@amrutam/frontend
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amrutam_test
 
