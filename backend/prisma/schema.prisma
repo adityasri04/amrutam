@@ -1,0 +1,167 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  phone     String?
+  password  String
+  role      UserRole @default(PATIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Patient specific fields
+  dateOfBirth     DateTime?
+  gender          Gender?
+  medicalHistory  String[]
+  emergencyContact Json?
+
+  // Doctor specific fields
+  specialization      String?
+  experience         Int?
+  education          String[]
+  certifications     String[]
+  rating             Float    @default(0)
+  totalConsultations Int      @default(0)
+  consultationFee    Float?
+  bio                String?
+  profileImage       String?
+  isAvailable        Boolean  @default(true)
+
+  // Relations
+  doctorAppointments Appointment[] @relation("DoctorAppointments")
+  patientAppointments Appointment[] @relation("PatientAppointments")
+  doctorSlots        TimeSlot[]
+  patientSlotLocks   SlotLock[] @relation("PatientSlotLocks")
+
+  @@map("users")
+}
+
+model Specialization {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  icon        String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("specializations")
+}
+
+model TimeSlot {
+  id           String     @id @default(cuid())
+  doctorId     String
+  date         DateTime
+  startTime    String
+  endTime      String
+  status       SlotStatus @default(AVAILABLE)
+  appointmentId String?
+  lockedUntil  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  doctor       User         @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  appointment  Appointment?
+  slotLocks   SlotLock[]
+
+  @@unique([doctorId, date, startTime])
+  @@map("time_slots")
+}
+
+model Appointment {
+  id               String            @id @default(cuid())
+  patientId        String
+  doctorId         String
+  slotId           String            @unique
+  status           AppointmentStatus @default(PENDING)
+  consultationMode ConsultationMode
+  symptoms         String?
+  notes            String?
+  prescription     String?
+  followUpDate     DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  cancelledAt      DateTime?
+  cancelledBy      String?
+  cancellationReason String?
+
+  // Relations
+  patient         User      @relation("PatientAppointments", fields: [patientId], references: [id], onDelete: Cascade)
+  doctor          User      @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
+  slot            TimeSlot  @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@map("appointments")
+}
+
+model SlotLock {
+  id           String   @id @default(cuid())
+  slotId       String
+  patientId    String
+  lockedUntil  DateTime
+  otp          String
+  otpExpiresAt DateTime
+  createdAt    DateTime @default(now())
+
+  // Relations
+  slot         TimeSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  patient      User     @relation("PatientSlotLocks", fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([slotId])
+  @@map("slot_locks")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([userId])
+  @@map("refresh_tokens")
+}
+
+enum UserRole {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+enum ConsultationMode {
+  ONLINE
+  IN_PERSON
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
+  LOCKED
+  UNAVAILABLE
+}
