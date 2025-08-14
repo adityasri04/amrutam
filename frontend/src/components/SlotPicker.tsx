@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface TimeSlot {
   id: string;
+  date: string;
   startTime: string;
   endTime: string;
   status: 'AVAILABLE' | 'BOOKED' | 'LOCKED';
