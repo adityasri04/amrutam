@@ -1,5 +1,6 @@
 'use client';
 
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthTokens } from '@/types';
 import { api } from '@/lib/api';
@@ -83,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Set default authorization header
         api.defaults.headers.common['Authorization'] = `Bearer ${authTokens.accessToken}`;
-        console.log('Login successful for user:', userData.firstName);
+        console.log('Login successful for user:', userData.firstName, 'Role:', userData.role);
         return true;
       } else {
         console.error('Login failed:', response.data.error);

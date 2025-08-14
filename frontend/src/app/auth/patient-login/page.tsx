@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, Heart, User } from 'lucide-react';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function PatientLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -47,7 +47,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <motion.div
@@ -62,9 +62,12 @@ export default function LoginPage() {
           </Link>
           
           <div className="text-3xl font-bold text-primary-600 mb-2">Amrutam</div>
-          <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to your account to continue your wellness journey
+          <div className="flex items-center justify-center mb-4">
+            <Heart className="h-8 w-8 text-primary-600 mr-3" />
+            <h2 className="text-3xl font-bold text-gray-900">Patient Portal</h2>
+          </div>
+          <p className="text-sm text-gray-600">
+            Access your health dashboard and book consultations
           </p>
         </motion.div>
 
@@ -98,7 +101,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Enter your email"
+                  placeholder="Enter your email address"
                 />
               </div>
             </div>
@@ -137,7 +140,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full btn btn-primary py-3 text-lg font-medium disabled:opacity-50"
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? 'Accessing Portal...' : 'Access Patient Portal'}
             </button>
 
             {/* Links */}
@@ -146,9 +149,9 @@ export default function LoginPage() {
                 Forgot your password?
               </Link>
               <div className="text-sm text-gray-600">
-                Don't have an account?{' '}
+                Don't have a patient account?{' '}
                 <Link href="/auth/register" className="text-primary-600 hover:text-primary-700 font-medium">
-                  Sign up
+                  Register here
                 </Link>
               </div>
             </div>
@@ -160,14 +163,27 @@ export default function LoginPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+          className="bg-green-50 border border-green-200 rounded-lg p-4"
         >
-          <h3 className="text-sm font-medium text-blue-900 mb-2">Demo Credentials:</h3>
-          <div className="text-xs text-blue-800 space-y-1">
-            <div><strong>Admin:</strong> admin@amrutam.com / admin123</div>
-            <div><strong>Doctor:</strong> dr.smith@example.com / doctor123</div>
-            <div><strong>Patient:</strong> john.doe@example.com / patient123</div>
+          <h3 className="text-sm font-medium text-green-900 mb-2">Demo Patient Credentials:</h3>
+          <div className="text-xs text-green-800 space-y-1">
+            <div><strong>John Doe:</strong> john.doe@example.com / patient123</div>
+            <div><strong>Jane Smith:</strong> jane.smith@example.com / patient123</div>
+            <div><strong>Mike Johnson:</strong> mike.johnson@example.com / patient123</div>
           </div>
+        </motion.div>
+
+        {/* Role Selection */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="text-center"
+        >
+          <p className="text-sm text-gray-600 mb-2">Are you a doctor?</p>
+          <Link href="/auth/doctor-login" className="text-primary-600 hover:text-primary-700 font-medium">
+            Access Doctor Portal
+          </Link>
         </motion.div>
       </div>
     </div>

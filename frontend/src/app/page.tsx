@@ -56,9 +56,14 @@ export default function HomePage() {
                 </Link>
               ) : (
                 <>
-                  <Link href="/auth/login" className="btn btn-ghost">
-                    Login
-                  </Link>
+                  <div className="flex items-center space-x-2">
+                    <Link href="/auth/patient-login" className="btn btn-ghost text-sm">
+                      Patient Login
+                    </Link>
+                    <Link href="/auth/doctor-login" className="btn btn-ghost text-sm">
+                      Doctor Login
+                    </Link>
+                  </div>
                   <Link href="/auth/register" className="btn btn-primary">
                     Get Started
                   </Link>
