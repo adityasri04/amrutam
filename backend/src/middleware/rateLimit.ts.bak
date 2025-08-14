@@ -18,13 +18,13 @@ export const createRateLimiter = (options: {
 }) => {
   return rateLimit({
     store: new RedisStore({
-      client: redis,
+      client: redis as any,
       prefix: 'rate_limit:',
     }),
     windowMs: options.windowMs,
     max: options.max,
     message: options.message || 'Too many requests from this IP',
-    keyGenerator: options.keyGenerator || ((req) => req.ip),
+    keyGenerator: options.keyGenerator || ((req) => req.ip || 'unknown'),
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,

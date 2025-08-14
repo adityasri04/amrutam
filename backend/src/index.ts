@@ -7,7 +7,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
-import { apiRateLimit, publicRateLimit } from './middleware/rateLimit';
+// import { apiRateLimit, publicRateLimit } from './middleware/rateLimit';
 
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
@@ -36,9 +36,9 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 8000;
 
-// Rate limiting
-app.use('/api/', apiRateLimit);
-app.use('/health', publicRateLimit);
+// Rate limiting - temporarily disabled for local development
+// app.use('/api/', apiRateLimit);
+// app.use('/health', publicRateLimit);
 
 // Middleware
 app.use(helmet());
