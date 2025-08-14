@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, AuthTokens } from '@amrutam/shared';
+import { User, AuthTokens } from '@/types';
 import { api } from '@/lib/api';
 
 interface AuthContextType {
