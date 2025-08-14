@@ -45,6 +45,7 @@ services:
     name: amrutam-redis
     plan: starter
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
 
 databases:
   - name: amrutam-postgres
