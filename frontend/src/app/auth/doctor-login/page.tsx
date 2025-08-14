@@ -167,9 +167,10 @@ export default function DoctorLoginPage() {
         >
           <h3 className="text-sm font-medium text-blue-900 mb-2">Demo Doctor Credentials:</h3>
           <div className="text-xs text-blue-800 space-y-1">
-            <div><strong>Dr. Smith:</strong> dr.smith@example.com / doctor123</div>
-            <div><strong>Dr. Johnson:</strong> dr.johnson@example.com / doctor123</div>
-            <div><strong>Dr. Williams:</strong> dr.williams@example.com / doctor123</div>
+            <div><strong>Dr. Sharma:</strong> dr.sharma@amrutam.com / doctor123</div>
+            <div><strong>Dr. Patel:</strong> dr.patel@amrutam.com / doctor123</div>
+            <div><strong>Dr. Kumar:</strong> dr.kumar@amrutam.com / doctor123</div>
+            <div><strong>Dr. Reddy:</strong> dr.reddy@amrutam.com / doctor123</div>
           </div>
         </motion.div>
 

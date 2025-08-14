@@ -168,8 +168,8 @@ export default function PatientLoginPage() {
           <h3 className="text-sm font-medium text-green-900 mb-2">Demo Patient Credentials:</h3>
           <div className="text-xs text-green-800 space-y-1">
             <div><strong>John Doe:</strong> john.doe@example.com / patient123</div>
-            <div><strong>Jane Smith:</strong> jane.smith@example.com / patient123</div>
-            <div><strong>Mike Johnson:</strong> mike.johnson@example.com / patient123</div>
+            <div><strong>Sarah Wilson:</strong> sarah.wilson@example.com / patient123</div>
+            <div><strong>Michael Chen:</strong> michael.chen@example.com / patient123</div>
           </div>
         </motion.div>
 

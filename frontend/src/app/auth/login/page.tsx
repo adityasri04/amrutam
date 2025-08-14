@@ -165,7 +165,7 @@ export default function LoginPage() {
           <h3 className="text-sm font-medium text-blue-900 mb-2">Demo Credentials:</h3>
           <div className="text-xs text-blue-800 space-y-1">
             <div><strong>Admin:</strong> admin@amrutam.com / admin123</div>
-            <div><strong>Doctor:</strong> dr.smith@example.com / doctor123</div>
+            <div><strong>Doctor:</strong> dr.sharma@amrutam.com / doctor123</div>
             <div><strong>Patient:</strong> john.doe@example.com / patient123</div>
           </div>
         </motion.div>
