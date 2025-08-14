@@ -7,8 +7,8 @@ import { api } from '@/lib/api';
 interface AuthContextType {
   user: User | null;
   tokens: AuthTokens | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: any) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (userData: any) => Promise<boolean>;
   logout: () => void;
   refreshToken: () => Promise<void>;
   isLoading: boolean;
@@ -70,7 +70,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      console.log('Attempting login for:', email);
       const response = await api.post('/auth/login', { email, password });
+      console.log('Login response:', response.data);
       
       if (response.data.success) {
         const { user: userData, tokens: authTokens } = response.data.data;
@@ -81,17 +83,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Set default authorization header
         api.defaults.headers.common['Authorization'] = `Bearer ${authTokens.accessToken}`;
+        console.log('Login successful for user:', userData.firstName);
+        return true;
       } else {
-        throw new Error(response.data.error || 'Login failed');
+        console.error('Login failed:', response.data.error);
+        return false;
       }
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || error.message || 'Login failed');
+      console.error('Login error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('Login failed');
+      }
     }
   };
 
   const register = async (userData: any) => {
     try {
+      console.log('Attempting registration for:', userData.email);
       const response = await api.post('/auth/register', userData);
+      console.log('Registration response:', response.data);
       
       if (response.data.success) {
         const { user: userData, tokens: authTokens } = response.data.data;
@@ -102,11 +121,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         // Set default authorization header
         api.defaults.headers.common['Authorization'] = `Bearer ${authTokens.accessToken}`;
+        console.log('Registration successful for user:', userData.firstName);
+        return true;
       } else {
-        throw new Error(response.data.error || 'Registration failed');
+        console.error('Registration failed:', response.data.error);
+        return false;
       }
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || error.message || 'Registration failed');
+      console.error('Registration error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      } else if (error.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error('Registration failed');
+      }
     }
   };
 
