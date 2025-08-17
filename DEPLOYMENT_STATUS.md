@@ -14,6 +14,7 @@
 - ✅ Build script created for deployment environment
 - ✅ Shared package symlink resolution implemented
 - ✅ Direct build command approach implemented for Render compatibility
+- ✅ Final build command with shared package copy for proper module resolution
 
 ### **Frontend (Vercel)**
 - **URL**: https://frontend-f87t6piba-adityasri04s-projects.vercel.app
@@ -26,7 +27,7 @@
 - **Platform**: Render
 - **Build Status**: ✅ Success (locally verified)
 - **Repository**: https://github.com/adityasri04/amrutam
-- **Build Command**: Direct command in render.yaml (no script dependency)
+- **Build Command**: Final optimized command in render.yaml with shared package copy
 
 ## 🔧 **Next Steps for Complete Live Deployment**
 
@@ -38,15 +39,16 @@
 4. **Select**: `amrutam` repository
 5. **Configure**:
    - **Name**: `amrutam-backend`
-   - **Root Directory**: `backend`
+   - **Root Directory**: `.` (root of repository)
    - **Runtime**: `Node`
-   - **Build Command**: Already configured in render.yaml
-   - **Start Command**: `npm start`
+   - **Build Command**: Already configured in render.yaml ✅
+   - **Start Command**: `cd backend && npm start`
 6. **Deploy**! 🚀
 
-### **What the Build Command Does Automatically**
+### **What the Final Build Command Does Automatically**
+- ✅ Installs root dependencies (including workspaces)
 - ✅ Builds the shared package first
-- ✅ Installs all backend dependencies
+- ✅ Installs backend dependencies
 - ✅ Generates Prisma client
 - ✅ Copies shared package to backend node_modules for proper resolution
 - ✅ Compiles TypeScript with all dependencies available
@@ -112,7 +114,7 @@
 - **Database**: 🔄 Auto-configured on Render
 - **All Features**: ✅ 100% Ready
 - **TypeScript Issues**: ✅ 100% Resolved
-- **Build Process**: ✅ Direct command approach for Render compatibility
+- **Build Process**: ✅ Final optimized command with shared package copy
 
 ## 🚨 **Important Notes**
 1. **Database**: PostgreSQL with Prisma ORM
@@ -120,8 +122,9 @@
 3. **Authentication**: JWT-based with refresh tokens
 4. **File Uploads**: Local storage (configurable for cloud storage)
 5. **Rate Limiting**: Redis-based rate limiting enabled
-6. **Build Process**: Direct build command in render.yaml (no script dependency)
+6. **Build Process**: Final optimized command in render.yaml with shared package copy
 7. **Shared Package**: Copy approach ensures proper resolution in Render environment
+8. **Root Directory**: Set to `.` (root) to access all workspaces
 
 ## 🔍 **Health Check**
 - Backend health endpoint: `/health`
@@ -132,21 +135,21 @@
 - **Documentation**: DEPLOYMENT_SETUP.md
 - **Scripts**: `./deploy-backend.sh`
 - **Status**: This file will be updated after deployment
-- **Build Command**: Direct command in render.yaml (tested locally)
+- **Build Command**: Final optimized command in render.yaml (tested locally)
 
 ## 🚀 **Why This Will Work Now**
 
-The direct build command approach addresses all previous deployment issues:
-1. **No Script Dependency**: Build command is directly in render.yaml
-2. **Shared Package**: Built first and copied for proper resolution
-3. **Prisma Client**: Generated after all dependencies are ready
-4. **Module Resolution**: Copy approach ensures `@amrutam/shared` is accessible
-5. **Build Order**: Proper sequence of operations
-6. **Render Compatibility**: Direct commands work better than script files
+The final build command approach addresses all previous deployment issues:
+1. **✅ Root Directory**: Set to `.` to access all workspaces
+2. **✅ Shared Package**: Built first and copied for proper resolution
+3. **✅ Prisma Client**: Generated after all dependencies are ready
+4. **✅ Module Resolution**: Copy approach ensures `@amrutam/shared` is accessible
+5. **✅ Build Order**: Proper sequence of operations
+6. **✅ Render Compatibility**: Optimized command structure for deployment environment
 
 ---
 
 **Last Updated**: $(date)
 **Status**: ✅ All Issues Resolved - Ready for Backend Deployment
 **Next Action**: Deploy backend on Render
-**Build Status**: ✅ Backend builds successfully with direct command approach
+**Build Status**: ✅ Backend builds successfully with final optimized command
