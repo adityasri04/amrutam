@@ -5,7 +5,7 @@ services:
     plan: starter
     rootDir: backend
     buildCommand: npm install && npm run build
-    startCommand: npm start
+    startCommand: chmod +x start.sh && ./start.sh
     envVars:
       - key: NODE_ENV
         value: production
@@ -33,13 +33,36 @@ services:
       - key: SLOT_LOCK_DURATION
         value: "300000"
       - key: FRONTEND_URL
-        value: "https://frontend-f87t6piba-adityasri04s-projects.vercel.app"
+        value: "https://frontend-f87t6piba-adityas06s-projects.vercel.app"
       - key: REDIS_HOST
         value: "localhost"
       - key: REDIS_PORT
         value: "6379"
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: amrutam-postgres
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: amrutam-postgres
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: amrutam-postgres
+          property: database
+      - key: DATABASE_USER
+        fromDatabase:
+          name: amrutam-postgres
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: amrutam-postgres
+          property: password
     healthCheckPath: /health
     autoDeploy: true
+    dependencies:
+      - amrutam-postgres
+      - amrutam-redis
 
   - type: redis
     name: amrutam-redis
