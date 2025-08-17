@@ -15,13 +15,11 @@ services:
         fromDatabase:
           name: amrutam-postgres
           property: connectionString
-        sync: false
       - key: REDIS_URL
         fromService:
           type: redis
           name: amrutam-redis
           property: connectionString
-        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
@@ -40,6 +38,10 @@ services:
         value: "localhost"
       - key: REDIS_PORT
         value: "6379"
+      - key: RENDER_DATABASE_NAME
+        value: "amrutam-postgres"
+      - key: RENDER_REDIS_NAME
+        value: "amrutam-redis"
       - key: DATABASE_HOST
         fromDatabase:
           name: amrutam-postgres
@@ -77,3 +79,4 @@ databases:
     databaseName: amrutam_db
     user: amrutam_user
     plan: starter
+    ipAllowList: []
