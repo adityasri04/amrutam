@@ -1,4 +1,20 @@
+# Database service - must be created first
+databases:
+  - name: amrutam-postgres
+    databaseName: amrutam_db
+    user: amrutam_user
+    plan: starter
+    ipAllowList: []
+
+# Redis service
 services:
+  - type: redis
+    name: amrutam-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+# Web service - depends on database and redis
   - type: web
     name: amrutam-backend
     env: node
@@ -41,6 +57,10 @@ services:
         value: "amrutam-postgres"
       - key: RENDER_REDIS_NAME
         value: "amrutam-redis"
+      - key: DATABASE_URL_FALLBACK
+        value: "postgresql://amrutam_user:password@localhost:5432/amrutam_db"
+      - key: REDIS_URL_FALLBACK
+        value: "redis://localhost:6379"
       - key: DATABASE_HOST
         fromDatabase:
           name: amrutam-postgres
@@ -66,16 +86,3 @@ services:
     dependencies:
       - amrutam-postgres
       - amrutam-redis
-
-  - type: redis
-    name: amrutam-redis
-    plan: starter
-    maxmemoryPolicy: allkeys-lru
-    ipAllowList: []
-
-databases:
-  - name: amrutam-postgres
-    databaseName: amrutam_db
-    user: amrutam_user
-    plan: starter
-    ipAllowList: []

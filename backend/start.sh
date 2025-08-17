@@ -13,6 +13,9 @@ if [ -n "$DATABASE_URL" ]; then
 elif [ -n "$DATABASE_HOST" ] && [ -n "$DATABASE_PASSWORD" ]; then
   export DATABASE_URL="postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}"
   echo "🔧 Constructed DATABASE_URL from components"
+elif [ -n "$DATABASE_URL_FALLBACK" ]; then
+  export DATABASE_URL="$DATABASE_URL_FALLBACK"
+  echo "🔧 Using fallback DATABASE_URL: ${DATABASE_URL:0:50}..."
 else
   echo "⚠️  No database connection info found"
 fi
