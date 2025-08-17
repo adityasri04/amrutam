@@ -27,7 +27,7 @@
 ### **Backend (Render)**
 - **Status**: ✅ **READY TO DEPLOY**
 - **Platform**: Render
-- **Build Status**: ✅ Success (locally verified)
+- **Build Status**: ✅ Success (locally verified with local types/utils - ALL TypeScript errors fixed)
 - **Repository**: https://github.com/adityasri04/amrutam
 - **Build Command**: Simple build command - no shared package dependency
 
@@ -41,10 +41,10 @@
 4. **Select**: `amrutam` repository
 5. **Configure**:
    - **Name**: `amrutam-backend`
-   - **Root Directory**: `.` (root of repository)
+   - **Root Directory**: `backend`
    - **Runtime**: `Node`
    - **Build Command**: Already configured in render.yaml ✅
-   - **Start Command**: `cd backend && npm start`
+   - **Start Command**: `npm start`
 6. **Deploy**! 🚀
 
 ### **What the Bulletproof Build Command Does**
