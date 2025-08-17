@@ -177,7 +177,7 @@ router.get('/', [
       });
 
       // Group slots by doctor
-      const slotsByDoctor = availableSlots.reduce((acc: Record<string, typeof availableSlots>, slot) => {
+      const slotsByDoctor = availableSlots.reduce((acc: Record<string, typeof availableSlots>, slot: any) => {
         if (!acc[slot.doctorId]) {
           acc[slot.doctorId] = [];
         }
@@ -186,7 +186,7 @@ router.get('/', [
       }, {});
 
       // Add available slots to doctors
-      doctorsWithSlots = doctors.map(doctor => ({
+      doctorsWithSlots = doctors.map((doctor: any) => ({
         ...doctor,
         availableSlots: slotsByDoctor[doctor.id] || []
       }));
