@@ -167,7 +167,7 @@ router.get('/', [
         where: {
           date: targetDate,
           status: 'AVAILABLE',
-          doctorId: { in: doctors.map(d => d.id) }
+          doctorId: { in: doctors.map((d: any) => d.id) }
         },
         select: {
           doctorId: true,
@@ -562,7 +562,7 @@ router.get('/:id/slots', async (req: any, res: any) => {
     // Filter by consultation mode if specified
     let filteredSlots = slots;
     if (consultationMode) {
-      filteredSlots = slots.filter(slot => {
+      filteredSlots = slots.filter((slot: any) => {
         if (slot.appointment) {
           return slot.appointment.consultationMode === consultationMode;
         }
