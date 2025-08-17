@@ -13,8 +13,8 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export async function connectDB() {
-  const maxRetries = 5;
-  const retryDelay = 5000; // 5 seconds
+  const maxRetries = 10;
+  const retryDelay = 3000; // 3 seconds
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -24,6 +24,14 @@ export async function connectDB() {
       if (!process.env.DATABASE_URL) {
         console.error('❌ DATABASE_URL environment variable is not set');
         console.log('Available environment variables:', Object.keys(process.env).filter(key => key.includes('DATABASE')));
+        
+        // Wait a bit and retry (environment variables might be set later)
+        if (attempt < maxRetries) {
+          console.log(`⏳ Waiting for DATABASE_URL to be set... (attempt ${attempt}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          continue;
+        }
+        
         throw new Error('DATABASE_URL environment variable is not set');
       }
       

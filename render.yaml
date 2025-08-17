@@ -5,7 +5,6 @@ services:
     plan: starter
     rootDir: backend
     buildCommand: npm install && npm run build
-    # startCommand: npm run start:render
     envVars:
       - key: NODE_ENV
         value: production
