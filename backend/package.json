@@ -7,7 +7,7 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "postbuild": "prisma generate",
-    "start": "node dist/index.js",
+    "start": "bash -c 'chmod +x start.sh && ./start.sh'",
     "start:render": "bash -c 'chmod +x start.sh && ./start.sh'",
     "type-check": "tsc --noEmit",
     "db:generate": "prisma generate",

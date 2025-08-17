@@ -8,12 +8,32 @@ env | grep -E "(DATABASE|REDIS|NODE)" | sort
 
 # Wait for environment variables to be available
 echo "⏳ Waiting for DATABASE_URL to be available..."
-while [ -z "$DATABASE_URL" ]; do
-  echo "⏳ DATABASE_URL not set, waiting 5 seconds..."
-  sleep 5
-  # Re-export environment variables
-  export $(env | grep -E "(DATABASE|REDIS|NODE)" | xargs)
+max_wait=300  # 5 minutes max wait
+wait_time=0
+
+while [ -z "$DATABASE_URL" ] && [ $wait_time -lt $max_wait ]; do
+  echo "⏳ DATABASE_URL not set, waiting 10 seconds... (${wait_time}s/${max_wait}s)"
+  sleep 10
+  wait_time=$((wait_time + 10))
+  
+  # Check if we're on Render and try to get environment variables
+  if [ -n "$RENDER" ]; then
+    echo "🔍 Running on Render, checking for database service..."
+    # Try to get database connection info from Render
+    if [ -n "$DATABASE_HOST" ] && [ -n "$DATABASE_PASSWORD" ]; then
+      export DATABASE_URL="postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}"
+      echo "🔧 Constructed DATABASE_URL from individual components"
+      break
+    fi
+  fi
 done
+
+if [ -z "$DATABASE_URL" ]; then
+  echo "❌ DATABASE_URL still not available after ${max_wait} seconds"
+  echo "🔍 Final environment check:"
+  env | grep -E "(DATABASE|REDIS|NODE|RENDER)" | sort
+  exit 1
+fi
 
 echo "✅ DATABASE_URL is available: ${DATABASE_URL:0:50}..."
 
@@ -28,4 +48,4 @@ echo "✅ Database is ready!"
 
 # Start the application
 echo "🚀 Starting application..."
-exec npm start
+exec node dist/index.js
