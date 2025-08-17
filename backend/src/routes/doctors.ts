@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { query, validationResult, body } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken, requireDoctor } from '../middleware/auth';
 import { getCache, setCache } from '../config/redis';
-import { validatePaginationParams, calculatePagination } from '@amrutam/shared';
+import { validatePaginationParams, calculatePagination, DoctorSearchFilters, PaginationParams } from '@amrutam/shared';
 
 const router = Router();
 
@@ -71,7 +71,7 @@ router.get('/', [
   query('limit').optional().isInt({ min: 1, max: 100 }),
   query('sortBy').optional().isIn(['rating', 'experience', 'consultationFee', 'createdAt']),
   query('sortOrder').optional().isIn(['asc', 'desc'])
-], async (req: any, res: any) => {
+], async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
