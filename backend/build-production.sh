@@ -24,12 +24,11 @@ echo "🔗 Linking shared package..."
 # Ensure the shared package is properly linked
 if [ -d "../shared/dist" ]; then
     echo "✅ Shared package dist found"
-    # Create a symlink to ensure the shared package is accessible
-    if [ ! -L "node_modules/@amrutam/shared" ]; then
-        echo "🔗 Creating symlink to shared package..."
-        mkdir -p node_modules/@amrutam
-        ln -sf ../../shared node_modules/@amrutam/shared
-    fi
+    # Copy the shared package directly to ensure it's accessible
+    echo "📋 Copying shared package to backend node_modules..."
+    mkdir -p node_modules/@amrutam
+    cp -r ../shared node_modules/@amrutam/shared
+    echo "✅ Shared package copied successfully"
 else
     echo "❌ Shared package dist not found"
     exit 1

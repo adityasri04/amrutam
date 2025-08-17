@@ -3,10 +3,9 @@ services:
     name: amrutam-backend
     env: node
     plan: starter
-    # Build from repo root so workspaces (frontend, backend, shared) are available
-    rootDir: .
-    buildCommand: npm install && npm run db:generate --workspace=backend && npm run build --workspaces
-    startCommand: npm run start --workspace=backend
+    rootDir: backend
+    buildCommand: chmod +x build-production.sh && ./build-production.sh
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
