@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { query, validationResult, body } from 'express-validator';
 import { prisma } from '../config/database';
-import { authenticateToken, requireDoctor } from '../middleware/auth';
+import { authenticateToken, requireDoctor, AuthRequest } from '../middleware/auth';
 import { getCache, setCache } from '../config/redis';
 import { validatePaginationParams, calculatePagination, DoctorSearchFilters, PaginationParams } from '@amrutam/shared';
 
@@ -176,19 +176,19 @@ router.get('/', [
       });
 
       // Group slots by doctor
-      const slotsByDoctor = availableSlots.reduce((acc, slot) => {
+      const slotsByDoctor = availableSlots.reduce((acc: Record<string, typeof availableSlots>, slot) => {
         if (!acc[slot.doctorId]) {
           acc[slot.doctorId] = [];
         }
         acc[slot.doctorId].push(slot);
         return acc;
-      }, {} as Record<string, any[]>);
+      }, {});
 
       // Add available slots to doctors
       doctorsWithSlots = doctors.map(doctor => ({
         ...doctor,
         availableSlots: slotsByDoctor[doctor.id] || []
-      })) as any[];
+      }));
 
       // Filter by consultation mode if specified
       if (consultationMode) {
@@ -598,7 +598,7 @@ router.get('/:id/slots', async (req: any, res: any) => {
  *       200:
  *         description: Doctor stats retrieved successfully
  */
-router.get('/:id/stats', async (req: any, res: any) => {
+router.get('/:id/stats', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -655,7 +655,7 @@ router.get('/:id/stats', async (req: any, res: any) => {
 });
 
 // Helper function to generate time slots from recurring rules
-async function generateTimeSlotsFromRule(rule: any) {
+async function generateTimeSlotsFromRule(rule: { startDate: Date | string; endDate?: Date | string | null; dayOfWeek: number; doctorId: string; id: string; startTime: string; endTime: string }) {
   const startDate = new Date(rule.startDate);
   const endDate = rule.endDate ? new Date(rule.endDate) : new Date();
   endDate.setDate(endDate.getDate() + 30); // Generate for next 30 days if no end date
@@ -670,7 +670,7 @@ async function generateTimeSlotsFromRule(rule: any) {
         date: new Date(currentDate),
         startTime: rule.startTime,
         endTime: rule.endTime,
-        status: 'AVAILABLE' as any,
+        status: 'AVAILABLE' as const,
         isRecurring: true,
         recurringRuleId: rule.id
       });
@@ -725,13 +725,13 @@ async function generateTimeSlotsFromRule(rule: any) {
  *       200:
  *         description: Schedule updated successfully
  */
-router.post('/:id/schedule', authenticateToken, requireDoctor, async (req: any, res) => {
+router.post('/:id/schedule', authenticateToken, requireDoctor, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { slots } = req.body;
 
     // Verify doctor is updating their own schedule
-    if (req.user.id !== id) {
+    if (!req.user || req.user.id !== id) {
       return res.status(403).json({
         success: false,
         error: 'Can only update own schedule'
@@ -747,7 +747,7 @@ router.post('/:id/schedule', authenticateToken, requireDoctor, async (req: any, 
     }
 
     // Clear existing slots for the specified dates
-    const dates = [...new Set(slots.map((slot: any) => slot.date))];
+    const dates = [...new Set(slots.map((slot: { date: string | Date }) => slot.date))];
     await prisma.timeSlot.deleteMany({
       where: {
         doctorId: id,
@@ -758,12 +758,12 @@ router.post('/:id/schedule', authenticateToken, requireDoctor, async (req: any, 
     });
 
     // Create new slots
-    const slotData = slots.map((slot: any) => ({
+    const slotData = slots.map((slot: { date: string | Date; startTime: string; endTime: string }) => ({
       doctorId: id,
       date: new Date(slot.date),
       startTime: slot.startTime,
       endTime: slot.endTime,
-      status: 'AVAILABLE' as any
+      status: 'AVAILABLE' as const
     }));
 
     await prisma.timeSlot.createMany({
