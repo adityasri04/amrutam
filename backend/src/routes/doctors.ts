@@ -3,7 +3,8 @@ import { query, validationResult, body } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken, requireDoctor, AuthRequest } from '../middleware/auth';
 import { getCache, setCache } from '../config/redis';
-import { validatePaginationParams, calculatePagination, DoctorSearchFilters, PaginationParams } from '@amrutam/shared';
+import { validatePaginationParams, calculatePagination } from '../utils';
+import { DoctorSearchFilters, PaginationParams } from '../types';
 
 const router = Router();
 

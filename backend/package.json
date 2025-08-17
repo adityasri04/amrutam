@@ -16,7 +16,7 @@
     "format": "prettier --write src/**/*.ts"
   },
   "dependencies": {
-    "@amrutam/shared": "file:../shared",
+
     "@prisma/client": "^5.7.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

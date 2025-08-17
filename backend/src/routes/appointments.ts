@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
 import { prisma } from '../config/database';
 import { authenticateToken, requirePatient, requireDoctor } from '../middleware/auth';
-import { generateOTP, canCancelOrReschedule } from '@amrutam/shared';
+import { generateOTP, canCancelOrReschedule } from '../utils';
 import { getCache, deleteCache } from '../config/redis';
 
 const router = Router();

@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { prisma } from '../config/database';
 import { authenticateToken } from '../middleware/auth';
-import { UserRole } from '@amrutam/shared';
+import { UserRole } from '../types';
 
 const router = Router();
 
