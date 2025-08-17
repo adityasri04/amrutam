@@ -5,7 +5,7 @@ services:
     plan: starter
     rootDir: backend
     buildCommand: npm install && npm run build
-    startCommand: chmod +x start.sh && ./start.sh
+    startCommand: npm run start:render
     envVars:
       - key: NODE_ENV
         value: production
@@ -15,11 +15,13 @@ services:
         fromDatabase:
           name: amrutam-postgres
           property: connectionString
+        sync: false
       - key: REDIS_URL
         fromService:
           type: redis
           name: amrutam-redis
           property: connectionString
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET

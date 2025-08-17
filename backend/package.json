@@ -8,6 +8,7 @@
     "build": "tsc",
     "postbuild": "prisma generate",
     "start": "node dist/index.js",
+    "start:render": "bash -c 'chmod +x start.sh && ./start.sh'",
     "type-check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
