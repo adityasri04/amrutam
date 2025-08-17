@@ -33,7 +33,7 @@ services:
       - key: SLOT_LOCK_DURATION
         value: "300000"
       - key: FRONTEND_URL
-        value: "https://frontend-9nx6pb8lp-adityasri04s-projects.vercel.app"
+        value: "https://frontend-f87t6piba-adityasri04s-projects.vercel.app"
       - key: REDIS_HOST
         value: "localhost"
       - key: REDIS_PORT
