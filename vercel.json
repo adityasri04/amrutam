@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
+      "src": "frontend/package.json",
       "use": "@vercel/next"
     }
   ],
@@ -13,14 +13,14 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/frontend/$1"
     }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://amrutam-backend.onrender.com"
+    "NODE_ENV": "production"
   },
   "functions": {
-    "frontend/src/app/**/*.tsx": {
+    "frontend/.next/server/**/*.js": {
       "maxDuration": 30
     }
   }

@@ -56,6 +56,7 @@ export default function ProfilePage() {
 
   const loadProfileData = async () => {
     try {
+      if (!user) return;
       // Mock data - in real app, fetch from API
       setProfileData({
         firstName: user.firstName || '',
@@ -85,7 +86,7 @@ export default function ProfilePage() {
       setProfileData(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof ProfileData],
+          ...(prev[parent as keyof ProfileData] as any),
           [child]: value
         }
       }));
@@ -332,7 +333,7 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Medical History</label>
                 <textarea
                   value={profileData.medicalHistory.join(', ')}
-                  onChange={(e) => handleInputChange('medicalHistory', e.target.value.split(', '))}
+                  onChange={(e) => handleInputChange('medicalHistory', e.target.value)}
                   disabled={!isEditing}
                   rows={3}
                   placeholder="Enter medical conditions, separated by commas"
